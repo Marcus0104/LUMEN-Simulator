@@ -1,5 +1,3 @@
-# C3G3 3.007 Virtual Prototype 
-
 # relevant libs 
 import pygame
 import random
