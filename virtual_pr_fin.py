@@ -1,7 +1,7 @@
 # relevant libs 
 import pygame
 import random
-import math 
+import math
 pygame.init()
 
 # declaration 
@@ -19,6 +19,7 @@ pygame.display.set_caption('LUMEN Simulator')
 # color options 
 white = (255,255,255) 
 black = (0,0,0) 
+bright_red = (238, 75, 43)
 
 # load img for chars 
 char1 = pygame.image.load(r"C:\Users\marcu\Desktop\3.007\virtual_proto\Images\char1.png")
@@ -33,7 +34,7 @@ char8 = pygame.image.load(r"C:\Users\marcu\Desktop\3.007\virtual_proto\Images\ch
 def euclid_dist(mX, mY, x, y):
         dist = math.sqrt((mX - x)**2 + (mY - y)**2)
 
-        if dist <= 80: 
+        if dist <= 60: 
             return True
         else: 
             return False 
@@ -171,8 +172,6 @@ class Grab_driver:
     def draw(self): 
         surface.blit(self.image, (self.x, self.y))
 
-# include smoking zone 
-
 # list to store all rect objects 
 # except smoker and grab driver 
 rects = [] 
@@ -231,7 +230,8 @@ while running:
         npc.draw()
 
     for npc in cells_3: 
-        npc.draw() 
+        smoker = npc
+        smoker.draw() 
 
     for npc in cells_4:
         npc.wander() 
@@ -241,18 +241,34 @@ while running:
         npc.wander()
         npc.draw() 
 
+    (mX, mY) = pygame.mouse.get_pos()
+    char1 = pygame.transform.scale(char1, (cellsize-10, cellsize+20))
+    mouse_rect = char1.get_rect(center = (mX, mY)) # create rect from surface 
+    surface.blit(char1, (mX, mY))
+
+    # compare collisions with mouse, drivers and smokers 
     driver.rect.x = round(driver.x)
     driver.rect.y = round(driver.y)
+    smoker.rect.x = round(smoker.x) 
+    smoker.rect.y = round(smoker.y)
     for rectangle in rects:
         rectangle.rect.x = round(rectangle.x)
         rectangle.rect.y = round(rectangle.y)
-        if rectangle.rect.colliderect(driver.rect): 
+
+        if rectangle.rect.colliderect(driver.rect) or rectangle.rect.colliderect(mouse_rect) or rectangle.rect.colliderect(smoker.rect): 
             rectangle.x_speed *= -1 
             rectangle.y_speed *= -1 
 
-    (mX, mY) = pygame.mouse.get_pos()
-    char1 = pygame.transform.scale(char1, (cellsize-10, cellsize+20)) 
-    surface.blit(char1, (mX, mY))
+    for i in range(len(rects)): 
+        for j in range(i+1, len(rects)): # compare with all elements in the for loop 
+            rects[i].rect.x = round(rects[i].x)
+            rects[i].rect.y = round(rects[i].y)
+            rects[j].rect.x = round(rects[j].x)
+            rects[j].rect.y = round(rects[j].y)
+            
+            if rects[i].rect.colliderect(rects[j]):
+                rects[i].x_speed *= -1 
+                rects[i].y_speed *= -1 
 
     for row in range(rows): 
         for col in range(cols): 
@@ -290,14 +306,14 @@ while running:
                     
     for row in range(rows): 
         for col in range(cols): 
-            for i in cells_3:  
+            for i in cells_3:  # SMOKERS 
                     x = col * cellsize + padding
                     y = row * cellsize + padding 
                     within_dist = euclid_dist(mX, mY, x, y)
                     npc_within = euclid_dist(i.x, i.y, x, y) 
 
                     if within_dist == True or npc_within == True:
-                        pygame.draw.circle(surface, warm_col, (x,y), 3) 
+                        pygame.draw.circle(surface, bright_red, (x,y), 3) 
                     
     for row in range(rows): 
         for col in range(cols): 
